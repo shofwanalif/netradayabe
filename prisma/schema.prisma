@@ -12,3 +12,50 @@ generator client {
 datasource db {
   provider = "mysql"
 }
+
+model Device {
+  id Int @id @default(autoincrement())
+  deviceCode String @unique
+  name String?
+  location String?
+  isActive Boolean @default(true)
+
+  logs SensorLog[]
+  alert Alert[]
+
+  @@map("devices")
+}
+
+model SensorLog {
+  id BigInt @id @default(autoincrement())
+
+  deviceId Int
+  device Device @relation(fields: [deviceId], references: [id])
+
+  voltage Float
+  current Float
+  power Float
+  status String @default("Normal")
+
+  createdAt DateTime @default(now())
+  
+  @@index([createdAt])
+  @@index([deviceId])
+  @@map("sensor_log")
+}
+
+model Alert {
+  id        Int      @id @default(autoincrement())
+
+  deviceId  Int
+  device    Device   @relation(fields: [deviceId], references: [id])
+
+  type      String   // Jenis Masalah: "VOLTAGE_SAG", "OVERLOAD", "OFFLINE"
+  value     Float    // Nilai angka saat kejadian (misal: 180.5)
+  message   String?  // Pesan deskriptif (misal: "Tegangan drop ke 180V!")
+  
+  createdAt DateTime @default(now())
+  isRead    Boolean  @default(false)
+
+  @@map("alerts")
+}
