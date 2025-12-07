@@ -29,7 +29,26 @@ const updateDevice = async (req, res) => {
   }
 };
 
+const getAlertHistory = async (req, res) => {
+  try {
+    const alerts = await prisma.alert.findMany({
+      take: 50,
+      orderBy: { createdAt: "desc" },
+      include: {
+        device: {
+          select: { name: true, location: true },
+        },
+      },
+    });
+
+    return res.status(200).json(alerts);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getAllDevices,
   updateDevice,
+  getAlertHistory,
 };
