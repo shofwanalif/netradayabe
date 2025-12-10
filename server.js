@@ -14,13 +14,25 @@ const io = socketConfig.init(server);
 io.on("connection", (socket) => {
   console.log("[Socket] Client connected:", socket.id);
 
+  // const testInterval = setInterval(() => {
+  //   socket.emit("sensor-update", {
+  //     deviceCode: "TEST_DEVICE",
+  //     voltage: 220,
+  //     current: 2.5,
+  //     power: 550,
+  //     status: "NORMAL",
+  //     timeStamp: new Date(),
+  //   });
+  //   console.log("[TEST] Emitting test data...");
+  // }, 2000);
+
   socket.on("disconnect", () => {
     console.log("[Socket] Client disconnected");
   });
 });
 
 // 4. Jalankan Server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server NetraDaya berjalan di port ${PORT}`);
 });

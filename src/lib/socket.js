@@ -7,9 +7,11 @@ module.exports = {
   init: (httpServer) => {
     io = new Server(httpServer, {
       cors: {
-        origin: "*", // Ganti URL Frontend saat produksi
+        origin: "http://localhost:3000", // Ganti URL Frontend saat produksi
         methods: ["GET", "POST"],
+        credentials: true,
       },
+      transports: ["websocket", "polling"],
     });
     return io;
   },

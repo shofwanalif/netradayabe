@@ -1,10 +1,26 @@
 const { timeStamp } = require("node:console");
 const prisma = require("../lib/prismaClient");
 const socketConfig = require("../lib/socket");
+const { parse } = require("node:path");
+
+const threshold = {
+  VOLTAGE_SAG: 210.0,
+  VOLTAGE_SWELL: 240.0,
+  CURRENT_MAX: 6.0,
+};
+
+const determineStatus = (voltage, current) => {
+  if (voltage < threshold.VOLTAGE_SAG) return "VOLTAGE_SAG";
+  if (voltage > threshold.VOLTAGE_SWELL) return "VOLTAGE_SWELL";
+  if (current > threshold.CURRENT_MAX) return "OVER_CURRENT";
+  return "NORMAL";
+};
 
 const receiveData = async (req, res) => {
   try {
-    const { device_code, voltage, current, power, status } = req.body;
+    const { device_code, voltage, current, power } = req.body;
+
+    const status = determineStatus(parseFloat(voltage), parseFloat(current));
 
     const io = socketConfig.getIO();
 
@@ -39,15 +55,14 @@ const receiveData = async (req, res) => {
         data: {
           deviceId: device.id,
           type: status,
-          value:
-            status === "VOLTAGE_SAG"
-              ? parseFloat(voltage)
-              : parseFloat(current),
+          value: status.includes("VOLTAGE")
+            ? parseFloat(voltage)
+            : parseFloat(current),
           message: `Terdeteksi gangguan ${status} pada alat ${device.name}`,
         },
       });
 
-      io.emit("new alert", {
+      io.emit("new-alert", {
         device: device.name,
         location: device.location,
         type: status,
@@ -58,9 +73,9 @@ const receiveData = async (req, res) => {
 
     io.emit("sensor-update", {
       deviceCode: device_code,
-      voltage: voltage,
-      current: current,
-      power: power,
+      voltage: parseFloat(voltage),
+      current: parseFloat(current),
+      power: parseFloat(power),
       status: status,
       timeStamp: new Date(),
     });

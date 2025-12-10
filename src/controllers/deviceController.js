@@ -43,6 +43,7 @@ const getAlertHistory = async (req, res) => {
 
     return res.status(200).json(alerts);
   } catch (error) {
+    console.error("Error in getAlertHistory:", error);
     return res.status(500).json({ error: error.message });
   }
 };
